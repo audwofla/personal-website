@@ -2,8 +2,8 @@
   {
     "year": "2025",
     "title": "Gear Tracker",
-    "desc": "Reddit marketplace watcher for used camera gear. Tracks listings and price history in PostgreSQL, uses rule-based matching with Claude/local LLM fallback for messy listings, and saves confirmed aliases and item mappings to improve future matching.",
-    "tag": "Python / rust",
+    "desc": "Reddit marketplace watcher for used camera gear that tracks listings, price history, and aliases, using Claude for messy matches",
+    "tag": "Python",
     "link": "https://github.com/audwofla/gear-tracker"
   }
 ]
