@@ -89,7 +89,7 @@
 }
 
 .dash-btn-primary:hover:not(:disabled) {
-  background: #322f2a;
+  background: var(--ink-hover);
 }
 
 .dash-btn-primary:disabled {
@@ -134,7 +134,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 28px 48px;
-  background: rgba(253, 253, 252, 0.88);
+  background: var(--nav-bg);
   backdrop-filter: blur(6px);
   border-bottom: 1px solid var(--border);
 }
