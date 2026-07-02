@@ -31,7 +31,7 @@ async function renderPhotos() {
       label.textContent = p.label || '';
 
       item.append(img, label);
-      item.addEventListener('click', () => openLightbox(p.src, p.label));
+      attachHoverPreview(item, p.src, p.label);
       grid.appendChild(item);
     }
   } catch (err) {
@@ -39,38 +39,53 @@ async function renderPhotos() {
   }
 }
 
-function openLightbox(src, label) {
-  const overlay = document.createElement('div');
-  overlay.className = 'lightbox';
+function attachHoverPreview(item, src, label) {
+  let preview = null;
+  let hideTimeout = null;
 
-  const img = document.createElement('img');
-  img.src = src;
-  img.alt = label || '';
+  item.addEventListener('mouseenter', () => {
+    clearTimeout(hideTimeout);
+    if (!preview) {
+      preview = document.createElement('div');
+      preview.className = 'photo-preview';
+      const img = document.createElement('img');
+      img.src = src;
+      img.alt = label || '';
+      preview.appendChild(img);
+      document.body.appendChild(preview);
+    }
+    positionPreview(preview, item);
+    requestAnimationFrame(() => preview.classList.add('open'));
+  });
 
-  const closeBtn = document.createElement('button');
-  closeBtn.type = 'button';
-  closeBtn.className = 'lightbox-close mono';
-  closeBtn.textContent = '✕';
-  closeBtn.setAttribute('aria-label', 'Close');
+  item.addEventListener('mouseleave', () => {
+    if (!preview) return;
+    preview.classList.remove('open');
+    hideTimeout = setTimeout(() => {
+      preview.remove();
+      preview = null;
+    }, 150);
+  });
+}
 
-  overlay.append(img, closeBtn);
-  document.body.appendChild(overlay);
-  document.body.style.overflow = 'hidden';
+function positionPreview(preview, item) {
+  const rect = item.getBoundingClientRect();
+  const maxW = Math.min(420, window.innerWidth * 0.7);
+  const maxH = Math.min(420, window.innerHeight * 0.7);
+  const margin = 16;
 
-  function close() {
-    overlay.remove();
-    document.body.style.overflow = '';
-    document.removeEventListener('keydown', onKey);
-  }
+  preview.style.maxWidth = `${maxW}px`;
+  preview.style.maxHeight = `${maxH}px`;
 
-  function onKey(e) {
-    if (e.key === 'Escape') close();
-  }
+  const cx = clamp(rect.left + rect.width / 2, maxW / 2 + margin, window.innerWidth - maxW / 2 - margin);
+  const cy = clamp(rect.top + rect.height / 2, maxH / 2 + margin, window.innerHeight - maxH / 2 - margin);
 
-  overlay.addEventListener('click', close);
-  document.addEventListener('keydown', onKey);
+  preview.style.left = `${cx}px`;
+  preview.style.top = `${cy}px`;
+}
 
-  requestAnimationFrame(() => overlay.classList.add('open'));
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
 }
 
 renderPhotos();

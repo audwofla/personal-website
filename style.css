@@ -172,22 +172,27 @@ nav {
 
 /* PHOTOGRAPHY */
 .photo-grid {
-  columns: 3;
-  column-gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
 
 .photo-item {
   position: relative;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
-  break-inside: avoid;
-  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-end;
+  padding: 12px;
   cursor: zoom-in;
 }
 
 .photo-item img {
-  display: block;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
 }
 
 .photo-item::after {
@@ -198,16 +203,14 @@ nav {
 }
 
 .photo-label {
-  position: absolute;
-  left: 12px;
-  bottom: 12px;
+  position: relative;
   z-index: 1;
   font-size: 11px;
   color: #f4f3f0;
 }
 
 .photo-grid-empty {
-  column-span: all;
+  grid-column: 1 / -1;
   padding: 48px 0;
   text-align: center;
 }
@@ -218,46 +221,29 @@ nav {
   letter-spacing: 0.03em;
 }
 
-/* LIGHTBOX */
-.lightbox {
+/* PHOTO HOVER PREVIEW */
+.photo-preview {
   position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(10, 9, 8, 0.92);
+  z-index: 50;
+  transform: translate(-50%, -50%) scale(0.94);
   opacity: 0;
-  transition: opacity 0.2s;
-  cursor: zoom-out;
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+  background: var(--bg);
+  padding: 6px;
+  border-radius: 2px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
 }
 
-.lightbox.open {
+.photo-preview.open {
   opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
-.lightbox img {
-  max-width: 90vw;
-  max-height: 90vh;
-  object-fit: contain;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-}
-
-.lightbox-close {
-  position: absolute;
-  top: 24px;
-  right: 32px;
-  background: none;
-  border: none;
-  color: #fdfdfc;
-  font-size: 20px;
-  line-height: 1;
-  padding: 8px;
-  cursor: pointer;
-}
-
-.lightbox-close:hover {
-  color: var(--dim);
+.photo-preview img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 /* SOUND */
@@ -368,7 +354,7 @@ footer {
   }
 
   .photo-grid {
-    columns: 2;
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .about-grid {
