@@ -1,14 +1,16 @@
 async function renderAbout() {
+  const heroBioEl = document.getElementById('hero-bio');
   const bioEl = document.getElementById('about-bio');
   const emailEl = document.getElementById('about-email');
   const linksWrap = document.getElementById('about-links');
-  if (!bioEl || !emailEl || !linksWrap) return;
+  if (!heroBioEl || !bioEl || !emailEl || !linksWrap) return;
 
   try {
     const res = await fetch('about.json', { cache: 'no-store' });
     if (!res.ok) throw new Error('fetch failed');
     const data = await res.json();
 
+    if (data.heroBio) heroBioEl.textContent = data.heroBio;
     if (data.bio) bioEl.textContent = data.bio;
 
     if (data.email) {
