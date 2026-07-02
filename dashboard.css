@@ -179,7 +179,65 @@
 .dash-card {
   border: 1px solid var(--border);
   border-radius: 4px;
-  padding: 20px;
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: opacity 0.15s, border-color 0.1s;
+}
+
+.dash-card.dragging {
+  opacity: 0.35;
+}
+
+.dash-card.drag-over-top {
+  border-top: 2px solid var(--ink);
+}
+
+.dash-card.drag-over-bottom {
+  border-bottom: 2px solid var(--ink);
+}
+
+.dash-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dash-drag-handle {
+  color: var(--dim);
+  font-size: 14px;
+  letter-spacing: 2px;
+  padding: 4px 8px;
+  margin-left: -8px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.dash-drag-handle:hover {
+  color: var(--soft);
+}
+
+.dash-drag-handle:active {
+  cursor: grabbing;
+}
+
+.dash-delete-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  background: none;
+  border: none;
+  color: var(--soft);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.dash-delete-btn:hover {
+  color: #b5453c;
+}
+
+.dash-card-fields {
   display: grid;
   grid-template-columns: 80px 1fr 1fr;
   gap: 12px;
@@ -205,38 +263,6 @@
   font-family: 'IBM Plex Mono', monospace;
 }
 
-.dash-card-controls {
-  grid-column: 1 / -1;
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  padding-top: 4px;
-  border-top: 1px solid var(--border);
-}
-
-.dash-card-controls button {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11px;
-  background: none;
-  border: none;
-  color: var(--soft);
-  cursor: pointer;
-  padding: 4px 8px;
-}
-
-.dash-card-controls button:hover:not(:disabled) {
-  color: var(--ink);
-}
-
-.dash-card-controls button:disabled {
-  color: var(--border);
-  cursor: not-allowed;
-}
-
-.dash-card-controls .danger:hover {
-  color: #b5453c;
-}
-
 @media (max-width: 640px) {
   .dash-main {
     padding: 40px 24px 100px;
@@ -246,7 +272,7 @@
     grid-template-columns: 1fr;
   }
 
-  .dash-card {
+  .dash-card-fields {
     grid-template-columns: 1fr 1fr;
   }
 

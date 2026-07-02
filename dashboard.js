@@ -261,6 +261,7 @@ document.getElementById('save-btn').addEventListener('click', async () => {
 /* ---------- editor ---------- */
 
 const editor = document.getElementById('project-editor');
+let draggedIndex = null;
 
 function renderEditor() {
   editor.innerHTML = '';
@@ -274,37 +275,19 @@ function buildCard(p, index) {
   card.className = 'dash-card';
   card.dataset.index = String(index);
 
-  card.appendChild(cardField('year', 'Year', p.year, ''));
-  card.appendChild(cardField('title', 'Title', p.title, 'span-2'));
-  card.appendChild(cardField('desc', 'Description', p.desc, 'span-3'));
-  card.appendChild(cardField('tag', 'Tag', p.tag, ''));
-  card.appendChild(cardField('link', 'Link', p.link, 'span-2'));
+  const header = document.createElement('div');
+  header.className = 'dash-card-header';
 
-  const controls = document.createElement('div');
-  controls.className = 'dash-card-controls';
-
-  const upBtn = document.createElement('button');
-  upBtn.type = 'button';
-  upBtn.textContent = '↑ up';
-  upBtn.disabled = index === 0;
-  upBtn.addEventListener('click', () => {
-    [projects[index - 1], projects[index]] = [projects[index], projects[index - 1]];
-    renderEditor();
-  });
-
-  const downBtn = document.createElement('button');
-  downBtn.type = 'button';
-  downBtn.textContent = '↓ down';
-  downBtn.disabled = index === projects.length - 1;
-  downBtn.addEventListener('click', () => {
-    [projects[index + 1], projects[index]] = [projects[index], projects[index + 1]];
-    renderEditor();
-  });
+  const handle = document.createElement('span');
+  handle.className = 'dash-drag-handle mono';
+  handle.setAttribute('draggable', 'true');
+  handle.title = 'drag to reorder';
+  handle.textContent = '⋮⋮';
 
   const delBtn = document.createElement('button');
   delBtn.type = 'button';
   delBtn.textContent = 'delete';
-  delBtn.className = 'danger';
+  delBtn.className = 'dash-delete-btn';
   delBtn.addEventListener('click', () => {
     if (confirm(`Delete "${p.title || 'this project'}"?`)) {
       projects.splice(index, 1);
@@ -312,8 +295,59 @@ function buildCard(p, index) {
     }
   });
 
-  controls.append(upBtn, downBtn, delBtn);
-  card.appendChild(controls);
+  header.append(handle, delBtn);
+
+  const fields = document.createElement('div');
+  fields.className = 'dash-card-fields';
+  fields.appendChild(cardField('year', 'Year', p.year, ''));
+  fields.appendChild(cardField('title', 'Title', p.title, 'span-2'));
+  fields.appendChild(cardField('desc', 'Description', p.desc, 'span-3'));
+  fields.appendChild(cardField('tag', 'Tag', p.tag, ''));
+  fields.appendChild(cardField('link', 'Link', p.link, 'span-2'));
+
+  card.append(header, fields);
+
+  handle.addEventListener('dragstart', (e) => {
+    draggedIndex = index;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+  });
+
+  handle.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+    editor.querySelectorAll('.dash-card').forEach((c) => {
+      c.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+  });
+
+  card.addEventListener('dragover', (e) => {
+    if (draggedIndex === null || draggedIndex === index) return;
+    e.preventDefault();
+    const before = e.clientY - card.getBoundingClientRect().top < card.offsetHeight / 2;
+    card.classList.toggle('drag-over-top', before);
+    card.classList.toggle('drag-over-bottom', !before);
+  });
+
+  card.addEventListener('dragleave', () => {
+    card.classList.remove('drag-over-top', 'drag-over-bottom');
+  });
+
+  card.addEventListener('drop', (e) => {
+    e.preventDefault();
+    card.classList.remove('drag-over-top', 'drag-over-bottom');
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const before = e.clientY - card.getBoundingClientRect().top < card.offsetHeight / 2;
+    let target = before ? index : index + 1;
+    const [moved] = projects.splice(draggedIndex, 1);
+    if (draggedIndex < target) target -= 1;
+    projects.splice(target, 0, moved);
+
+    draggedIndex = null;
+    renderEditor();
+  });
+
   return card;
 }
 
