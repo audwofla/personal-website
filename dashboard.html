@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Dashboard — Jeremy Myung</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="dash-body">
+
+  <!-- GATE: shown until the correct password is entered -->
+  <section id="gate" class="dash-gate">
+    <div class="dash-gate-box">
+      <div class="mono dash-gate-label" id="gate-label">// enter password</div>
+      <form id="gate-form">
+        <input type="password" id="gate-password" class="dash-input" autocomplete="current-password" placeholder="password" autofocus>
+        <input type="password" id="gate-password-confirm" class="dash-input" autocomplete="new-password" placeholder="confirm password" style="display:none">
+        <button type="submit" class="dash-btn dash-btn-primary">Unlock</button>
+      </form>
+      <div class="mono dash-gate-error" id="gate-error"></div>
+      <button type="button" class="mono dash-link-btn" id="gate-reset">forgot / reset password</button>
+    </div>
+  </section>
+
+  <!-- DASHBOARD: shown once unlocked -->
+  <div id="dashboard" class="dash-wrap" style="display:none">
+    <nav class="dash-nav">
+      <div class="nav-name">JEREMY MYUNG <span class="mono dash-nav-tag">/ dashboard</span></div>
+      <div class="nav-links">
+        <a href="index.html">← back to site</a>
+        <button type="button" class="mono dash-link-btn" id="lock-btn">lock</button>
+      </div>
+    </nav>
+
+    <main class="dash-main">
+      <section class="dash-panel">
+        <div class="section-header">
+          <span class="mono section-num">gh</span>
+          <h2>GitHub connection</h2>
+        </div>
+        <div class="dash-field-row">
+          <label class="mono dash-label">owner/repo</label>
+          <input type="text" id="cfg-repo" class="dash-input" placeholder="audwofla/personal-website">
+        </div>
+        <div class="dash-field-row">
+          <label class="mono dash-label">branch</label>
+          <input type="text" id="cfg-branch" class="dash-input" placeholder="main">
+        </div>
+        <div class="dash-field-row">
+          <label class="mono dash-label">token</label>
+          <input type="password" id="cfg-token" class="dash-input" placeholder="github personal access token (repo scope)">
+        </div>
+        <div class="dash-field-row">
+          <label class="mono dash-checkbox-label">
+            <input type="checkbox" id="cfg-remember">
+            <span>remember on this device</span>
+          </label>
+        </div>
+        <div class="dash-actions">
+          <button type="button" class="dash-btn" id="load-btn">Load projects</button>
+        </div>
+        <div class="mono dash-status" id="status"></div>
+      </section>
+
+      <section class="dash-panel">
+        <div class="section-header">
+          <span class="mono section-num">01</span>
+          <h2>Selected projects</h2>
+        </div>
+        <div id="project-editor" class="dash-editor"></div>
+        <div class="dash-actions">
+          <button type="button" class="dash-btn" id="add-btn">+ add project</button>
+          <button type="button" class="dash-btn dash-btn-primary" id="save-btn" disabled>Save &amp; publish</button>
+        </div>
+        <div class="mono dash-status" id="save-status"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

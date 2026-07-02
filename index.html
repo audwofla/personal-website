@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <script src="projects.js" defer></script>
 </head>
 <body>
 
@@ -36,39 +37,8 @@
       <span class="mono section-num">01</span>
       <h2>Selected projects</h2>
     </div>
-    <div class="project-list">
-      <a href="#" class="project-row">
-        <span class="mono project-year">2025</span>
-        <div class="project-info">
-          <div class="project-title">Lumen</div>
-          <div class="project-desc">Realtime collaborative canvas for small design teams</div>
-        </div>
-        <span class="mono project-tag">react / rust</span>
-      </a>
-      <a href="#" class="project-row">
-        <span class="mono project-year">2024</span>
-        <div class="project-info">
-          <div class="project-title">Fieldnote</div>
-          <div class="project-desc">Offline-first journaling app with local-only sync</div>
-        </div>
-        <span class="mono project-tag">swift</span>
-      </a>
-      <a href="#" class="project-row">
-        <span class="mono project-year">2023</span>
-        <div class="project-info">
-          <div class="project-title">Quiet Hours</div>
-          <div class="project-desc">Generative ambient player, browser-based synthesis</div>
-        </div>
-        <span class="mono project-tag">web audio api</span>
-      </a>
-      <a href="#" class="project-row">
-        <span class="mono project-year">2022</span>
-        <div class="project-info">
-          <div class="project-title">Passage</div>
-          <div class="project-desc">Minimal static site generator for photographers</div>
-        </div>
-        <span class="mono project-tag">node / go</span>
-      </a>
+    <div class="project-list" id="project-list">
+      <span class="mono" style="color: var(--dim); font-size: 13px;">// loading projects…</span>
     </div>
   </section>
 

@@ -1,0 +1,257 @@
+.dash-body {
+  min-height: 100vh;
+}
+
+/* GATE */
+.dash-gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.dash-gate-box {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dash-gate-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.dash-gate-error {
+  font-size: 12px;
+  color: #b5453c;
+  min-height: 16px;
+}
+
+/* SHARED CONTROLS */
+.dash-input {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 2px;
+  width: 100%;
+}
+
+.dash-input:focus {
+  outline: none;
+  border-color: var(--soft);
+}
+
+.dash-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.dash-btn:hover:not(:disabled) {
+  background: var(--hover-bg);
+  border-color: var(--soft);
+}
+
+.dash-btn:disabled {
+  color: var(--dim);
+  cursor: not-allowed;
+}
+
+.dash-btn-primary {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+.dash-btn-primary:hover:not(:disabled) {
+  background: #322f2a;
+}
+
+.dash-btn-primary:disabled {
+  background: var(--border);
+  border-color: var(--border);
+  color: var(--dim);
+}
+
+.dash-link-btn {
+  background: none;
+  border: none;
+  color: var(--soft);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.dash-link-btn:hover {
+  color: var(--ink);
+}
+
+.dash-status {
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 16px;
+}
+
+.dash-status.err {
+  color: #b5453c;
+}
+
+.dash-status.ok {
+  color: #4a7a4a;
+}
+
+/* NAV */
+.dash-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28px 48px;
+  background: rgba(253, 253, 252, 0.88);
+  backdrop-filter: blur(6px);
+  border-bottom: 1px solid var(--border);
+}
+
+.dash-nav-tag {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.dash-main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 60px 48px 140px;
+}
+
+.dash-panel {
+  margin-bottom: 64px;
+}
+
+.dash-field-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.dash-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dash-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  grid-column: 1 / -1;
+}
+
+.dash-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* PROJECT EDITOR */
+.dash-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dash-card {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  gap: 12px;
+}
+
+.dash-card-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dash-card-field.span-2 {
+  grid-column: span 2;
+}
+
+.dash-card-field.span-3 {
+  grid-column: 1 / -1;
+}
+
+.dash-card-field label {
+  font-size: 11px;
+  color: var(--dim);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.dash-card-controls {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.dash-card-controls button {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  background: none;
+  border: none;
+  color: var(--soft);
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.dash-card-controls button:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.dash-card-controls button:disabled {
+  color: var(--border);
+  cursor: not-allowed;
+}
+
+.dash-card-controls .danger:hover {
+  color: #b5453c;
+}
+
+@media (max-width: 640px) {
+  .dash-main {
+    padding: 40px 24px 100px;
+  }
+
+  .dash-field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-card {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .dash-card-field.span-2,
+  .dash-card-field.span-3 {
+    grid-column: 1 / -1;
+  }
+}

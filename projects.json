@@ -1,0 +1,30 @@
+[
+  {
+    "year": "2025",
+    "title": "Lumen",
+    "desc": "Realtime collaborative canvas for small design teams",
+    "tag": "react / rust",
+    "link": "#"
+  },
+  {
+    "year": "2024",
+    "title": "Fieldnote",
+    "desc": "Offline-first journaling app with local-only sync",
+    "tag": "swift",
+    "link": "#"
+  },
+  {
+    "year": "2023",
+    "title": "Quiet Hours",
+    "desc": "Generative ambient player, browser-based synthesis",
+    "tag": "web audio api",
+    "link": "#"
+  },
+  {
+    "year": "2022",
+    "title": "Passage",
+    "desc": "Minimal static site generator for photographers",
+    "tag": "node / go",
+    "link": "#"
+  }
+]
