@@ -372,6 +372,6 @@ function cardField(key, label, value, spanClass) {
 }
 
 document.getElementById('add-btn').addEventListener('click', () => {
-  projects.push({ year: '', title: '', desc: '', tag: '', link: '#' });
+  projects.push({ year: '', title: '', desc: '', tag: '', link: '' });
   renderEditor();
 });
