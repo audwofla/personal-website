@@ -21,77 +21,84 @@
 </head>
 <body>
 
-  <!-- NAV -->
-  <nav>
-    <div class="nav-name">JEREMY MYUNG</div>
-    <div class="nav-links">
-      <a href="#work">01 — work</a>
-      <a href="#photo">02 — photo</a>
-      <a href="#sound">03 — music</a>
-      <a href="#about">04 — about</a>
-      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode">dark</button>
-    </div>
-  </nav>
+  <div class="page">
 
-  <!-- HERO -->
-  <section class="hero">
-    <h1>Jeremy Myung</h1>
-    <div class="mono hero-role" id="hero-role">// software engineer &amp; creative</div>
-    <p class="hero-bio" id="hero-bio">
-      A software engineer working across product engineering, photography, and ambient composition. Based in Lisbon.
-    </p>
-  </section>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-name">JEREMY MYUNG</div>
+      <div class="mono sidebar-role" id="hero-role">// software engineer &amp; creative</div>
+      <p class="sidebar-bio" id="hero-bio">
+        A software engineer working across product engineering, photography, and ambient composition. Based in Lisbon.
+      </p>
 
-  <!-- WORK -->
-  <section id="work" class="section">
-    <div class="section-header">
-      <span class="mono section-num">01</span>
-      <h2>Selected projects</h2>
-    </div>
-    <div class="project-list" id="project-list">
-      <span class="mono" style="color: var(--dim); font-size: 13px;">// loading projects…</span>
-    </div>
-  </section>
+      <nav class="sidebar-nav mono">
+        <a href="#work">01 — work</a>
+        <a href="#photo">02 — photo</a>
+        <a href="#sound">03 — music</a>
+        <a href="#about">04 — about</a>
+      </nav>
 
-  <!-- PHOTO -->
-  <section id="photo" class="section">
-    <div class="section-header">
-      <span class="mono section-num">02</span>
-      <h2>Photography</h2>
-    </div>
-    <div class="photo-grid" id="photo-grid"></div>
-  </section>
+      <button type="button" class="theme-toggle mono" id="theme-toggle" aria-label="Switch to dark mode">dark</button>
 
-  <!-- SOUND -->
-  <section id="sound" class="section">
-    <div class="section-header">
-      <span class="mono section-num">03</span>
-      <h2>Sound &amp; music</h2>
-    </div>
-    <div class="sound-placeholder">
-      <span class="mono">// work in progress — coming soon</span>
-    </div>
-  </section>
-
-  <!-- ABOUT / FOOTER -->
-  <div id="about" class="about-wrap">
-    <div class="about-grid">
-      <div class="about-text">
-        <span class="mono about-label">04 — about</span>
-        <p id="about-bio">
-          I spend most of my time writing code, but I think in frames and frequencies. This site is where the three overlap.
-        </p>
-      </div>
-      <div class="about-links" id="about-links">
+      <div class="sidebar-links" id="about-links">
         <a href="mailto:hello@jeremymyung.com" class="mono contact-email" id="about-email">hello@jeremymyung.com</a>
         <a href="#" class="mono contact-link">github ↗</a>
         <a href="#" class="mono contact-link">are.na ↗</a>
       </div>
-    </div>
-    <footer>
-      <span>© 2026 jeremy myung</span>
-      <span>built by hand, no framework</span>
-    </footer>
+
+      <div class="sidebar-footer mono">
+        <span>© 2026 jeremy myung</span>
+        <span>built by hand, no framework</span>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- WORK -->
+      <section id="work" class="section">
+        <div class="section-header">
+          <span class="mono section-num">01</span>
+          <h2>Projects</h2>
+        </div>
+        <div class="project-list" id="project-list">
+          <span class="mono" style="color: var(--dim); font-size: 13px;">// loading projects…</span>
+        </div>
+      </section>
+
+      <!-- PHOTO -->
+      <section id="photo" class="section">
+        <div class="section-header">
+          <span class="mono section-num">02</span>
+          <h2>Photography</h2>
+        </div>
+        <div class="photo-grid" id="photo-grid"></div>
+      </section>
+
+      <!-- SOUND -->
+      <section id="sound" class="section">
+        <div class="section-header">
+          <span class="mono section-num">03</span>
+          <h2>Sound &amp; music</h2>
+        </div>
+        <div class="sound-placeholder">
+          <span class="mono">// work in progress — coming soon</span>
+        </div>
+      </section>
+
+      <!-- ABOUT -->
+      <section id="about" class="section">
+        <div class="section-header">
+          <span class="mono section-num">04</span>
+          <h2>About</h2>
+        </div>
+        <p class="about-text" id="about-bio">
+          I spend most of my time writing code, but I think in frames and frequencies. This site is where the three overlap.
+        </p>
+      </section>
+
+    </main>
+
   </div>
 
 </body>
