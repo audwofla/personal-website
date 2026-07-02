@@ -12,9 +12,25 @@
   --soft: #6b6862;
   --border: #eae8e3;
   --hover-bg: #f7f6f3;
+  --nav-bg: rgba(253, 253, 252, 0.88);
+  --text-strong: #4a4740;
+  --ink-hover: #322f2a;
   --sidebar-w: 280px;
   --main-max: 1500px;
   --edge-pad: clamp(24px, 4vw, 48px);
+}
+
+[data-theme="dark"] {
+  --bg: #15140f;
+  --ink: #f1efe9;
+  --muted: #948f85;
+  --dim: #5c584f;
+  --soft: #b3ada2;
+  --border: #2e2b25;
+  --hover-bg: #1e1c17;
+  --nav-bg: rgba(21, 20, 15, 0.88);
+  --text-strong: #d9d6cd;
+  --ink-hover: #ded9d0;
 }
 
 html { scroll-behavior: smooth; }
@@ -24,6 +40,7 @@ body {
   background: var(--bg);
   color: var(--ink);
   min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 ::selection {
@@ -64,6 +81,26 @@ a {
   color: var(--ink);
 }
 
+.theme-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--soft);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--ink);
+}
+
+.sidebar .theme-toggle {
+  margin-bottom: 40px;
+  text-align: left;
+}
+
 /* PAGE LAYOUT */
 .page {
   display: flex;
@@ -101,7 +138,7 @@ a {
 .sidebar-bio {
   font-size: 14px;
   line-height: 1.6;
-  color: #4a4740;
+  color: var(--text-strong);
   margin-bottom: 40px;
 }
 
@@ -243,7 +280,7 @@ a {
 }
 
 .photo-grid img {
-  border: 1px solid #e6e6e6;
+  border: 1px solid var(--border);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
@@ -331,7 +368,7 @@ a {
 .about-text {
   font-size: clamp(16px, 0.3vw + 15px, 19px);
   line-height: 1.6;
-  color: #4a4740;
+  color: var(--text-strong);
   max-width: 640px;
 }
 
@@ -394,6 +431,10 @@ a {
     flex-direction: row;
     flex-wrap: wrap;
     gap: 10px 24px;
+    margin-bottom: 24px;
+  }
+
+  .sidebar .theme-toggle {
     margin-bottom: 24px;
   }
 

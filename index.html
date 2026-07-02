@@ -4,12 +4,20 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Jeremy Myung</title>
+  <script>
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="projects.js" defer></script>
   <script src="about.js" defer></script>
   <script src="photos.js" defer></script>
+  <script src="theme.js" defer></script>
 </head>
 <body>
 
@@ -18,7 +26,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-name">JEREMY MYUNG</div>
-      <div class="mono sidebar-role">// software engineer &amp; creative</div>
+      <div class="mono sidebar-role" id="hero-role">// software engineer &amp; creative</div>
       <p class="sidebar-bio" id="hero-bio">
         A software engineer working across product engineering, photography, and ambient composition. Based in Lisbon.
       </p>
@@ -29,6 +37,8 @@
         <a href="#sound">03 — music</a>
         <a href="#about">04 — about</a>
       </nav>
+
+      <button type="button" class="theme-toggle mono" id="theme-toggle" aria-label="Switch to dark mode">dark</button>
 
       <div class="sidebar-links" id="about-links">
         <a href="mailto:hello@jeremymyung.com" class="mono contact-email" id="about-email">hello@jeremymyung.com</a>

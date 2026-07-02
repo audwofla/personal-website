@@ -10,7 +10,7 @@ let projects = [];
 let projectsSha = null;
 const projectsDrag = { index: null };
 
-let aboutData = { heroBio: '', bio: '', email: '', links: [] };
+let aboutData = { heroRole: '', heroBio: '', bio: '', email: '', links: [] };
 let aboutSha = null;
 const linksDrag = { index: null };
 
@@ -414,11 +414,13 @@ document.getElementById('add-btn').addEventListener('click', () => {
 
 const aboutStatus = document.getElementById('about-status');
 const saveAboutBtn = document.getElementById('save-about-btn');
+const heroRoleInput = document.getElementById('hero-role-input');
 const heroBioInput = document.getElementById('hero-bio-input');
 const aboutBioInput = document.getElementById('about-bio');
 const aboutEmailInput = document.getElementById('about-email');
 const linkEditor = document.getElementById('link-editor');
 
+heroRoleInput.addEventListener('input', (e) => { aboutData.heroRole = e.target.value; });
 heroBioInput.addEventListener('input', (e) => { aboutData.heroBio = e.target.value; });
 aboutBioInput.addEventListener('input', (e) => { aboutData.bio = e.target.value; });
 aboutEmailInput.addEventListener('input', (e) => { aboutData.email = e.target.value; });
@@ -429,11 +431,13 @@ document.getElementById('load-about-btn').addEventListener('click', async () => 
   if (!result) return;
   aboutSha = result.sha;
   aboutData = {
+    heroRole: result.parsed.heroRole || '',
     heroBio: result.parsed.heroBio || '',
     bio: result.parsed.bio || '',
     email: result.parsed.email || '',
     links: result.parsed.links || [],
   };
+  heroRoleInput.value = aboutData.heroRole;
   heroBioInput.value = aboutData.heroBio;
   aboutBioInput.value = aboutData.bio;
   aboutEmailInput.value = aboutData.email;
@@ -448,6 +452,7 @@ document.getElementById('save-about-btn').addEventListener('click', async () => 
     return;
   }
   const clean = {
+    heroRole: heroRoleInput.value || '',
     heroBio: heroBioInput.value || '',
     bio: aboutBioInput.value || '',
     email: aboutEmailInput.value || '',

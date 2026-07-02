@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>Dashboard — Jeremy Myung</title>
+  <script>
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -33,6 +40,7 @@
       <div class="nav-links">
         <a href="index.html">← back to site</a>
         <button type="button" class="mono dash-link-btn" id="lock-btn">lock</button>
+        <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode">dark</button>
       </div>
     </nav>
 
@@ -97,6 +105,10 @@
           <span class="mono section-num">04</span>
           <h2>About</h2>
         </div>
+        <div class="dash-field-row">
+          <label class="mono dash-label">hero role</label>
+          <input type="text" id="hero-role-input" class="dash-input" placeholder="// software engineer &amp; creative">
+        </div>
         <div class="dash-field-row" style="align-items: flex-start">
           <label class="mono dash-label">hero bio</label>
           <textarea id="hero-bio-input" class="dash-input dash-textarea" placeholder="short bio shown at the top of the page"></textarea>
@@ -124,5 +136,6 @@
   </div>
 
   <script src="dashboard.js"></script>
+  <script src="theme.js" defer></script>
 </body>
 </html>
