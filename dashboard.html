@@ -60,10 +60,6 @@
             <span>remember on this device</span>
           </label>
         </div>
-        <div class="dash-actions">
-          <button type="button" class="dash-btn" id="load-btn">Load projects</button>
-        </div>
-        <div class="mono dash-status" id="status"></div>
       </section>
 
       <section class="dash-panel">
@@ -73,10 +69,37 @@
         </div>
         <div id="project-editor" class="dash-editor"></div>
         <div class="dash-actions">
+          <button type="button" class="dash-btn" id="load-projects-btn">Load projects</button>
           <button type="button" class="dash-btn" id="add-btn">+ add project</button>
           <button type="button" class="dash-btn dash-btn-primary" id="save-btn" disabled>Save &amp; publish</button>
         </div>
+        <div class="mono dash-status" id="status"></div>
         <div class="mono dash-status" id="save-status"></div>
+      </section>
+
+      <section class="dash-panel">
+        <div class="section-header">
+          <span class="mono section-num">04</span>
+          <h2>About</h2>
+        </div>
+        <div class="dash-field-row" style="align-items: flex-start">
+          <label class="mono dash-label">bio</label>
+          <textarea id="about-bio" class="dash-input dash-textarea" placeholder="short bio shown in the about section"></textarea>
+        </div>
+        <div class="dash-field-row">
+          <label class="mono dash-label">email</label>
+          <input type="email" id="about-email" class="dash-input" placeholder="hello@example.com">
+        </div>
+
+        <div class="mono dash-label dash-subheading">links</div>
+        <div id="link-editor" class="dash-editor"></div>
+
+        <div class="dash-actions">
+          <button type="button" class="dash-btn" id="load-about-btn">Load about</button>
+          <button type="button" class="dash-btn" id="add-link-btn">+ add link</button>
+          <button type="button" class="dash-btn dash-btn-primary" id="save-about-btn" disabled>Save &amp; publish</button>
+        </div>
+        <div class="mono dash-status" id="about-status"></div>
       </section>
     </main>
   </div>

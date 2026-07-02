@@ -1,11 +1,17 @@
 const PROJECTS_PATH = 'projects.json';
+const ABOUT_PATH = 'about.json';
 const LS_PW_HASH = 'dash_pw_hash';
 const LS_REPO = 'dash_cfg_repo';
 const LS_BRANCH = 'dash_cfg_branch';
 const LS_TOKEN = 'dash_cfg_token';
 
 let projects = [];
-let currentSha = null;
+let projectsSha = null;
+const projectsDrag = { index: null };
+
+let aboutData = { bio: '', email: '', links: [] };
+let aboutSha = null;
+const linksDrag = { index: null };
 
 /* ---------- crypto helpers ---------- */
 
@@ -115,9 +121,6 @@ const cfgRepo = document.getElementById('cfg-repo');
 const cfgBranch = document.getElementById('cfg-branch');
 const cfgToken = document.getElementById('cfg-token');
 const cfgRemember = document.getElementById('cfg-remember');
-const status = document.getElementById('status');
-const saveStatus = document.getElementById('save-status');
-const saveBtn = document.getElementById('save-btn');
 
 function loadCfgFromStorage() {
   cfgRepo.value = localStorage.getItem(LS_REPO) || 'audwofla/personal-website';
@@ -142,19 +145,10 @@ function ghHeaders(token) {
   };
 }
 
-document.getElementById('load-btn').addEventListener('click', async () => {
+function readCfg() {
   const repo = cfgRepo.value.trim();
   const branch = cfgBranch.value.trim() || 'main';
   const token = cfgToken.value.trim();
-
-  if (!repo.includes('/')) {
-    setStatus(status, 'repo must be in "owner/repo" format', 'err');
-    return;
-  }
-  if (!token) {
-    setStatus(status, 'a github token is required', 'err');
-    return;
-  }
 
   if (cfgRemember.checked) {
     localStorage.setItem(LS_REPO, repo);
@@ -166,49 +160,176 @@ document.getElementById('load-btn').addEventListener('click', async () => {
     localStorage.removeItem(LS_TOKEN);
   }
 
-  setStatus(status, 'loading…');
-  saveBtn.disabled = true;
+  return { repo, branch, token };
+}
+
+async function loadFile(path, statusEl) {
+  const { repo, branch, token } = readCfg();
+
+  if (!repo.includes('/')) {
+    setStatus(statusEl, 'repo must be in "owner/repo" format', 'err');
+    return null;
+  }
+  if (!token) {
+    setStatus(statusEl, 'a github token is required', 'err');
+    return null;
+  }
+
+  setStatus(statusEl, 'loading…');
 
   try {
     const res = await fetch(
-      `https://api.github.com/repos/${repo}/contents/${PROJECTS_PATH}?ref=${encodeURIComponent(branch)}`,
+      `https://api.github.com/repos/${repo}/contents/${path}?ref=${encodeURIComponent(branch)}`,
       { headers: ghHeaders(token) }
     );
 
     if (res.status === 401 || res.status === 403) {
-      setStatus(status, 'token invalid or lacks access to this repo', 'err');
-      return;
+      setStatus(statusEl, 'token invalid or lacks access to this repo', 'err');
+      return null;
     }
     if (res.status === 404) {
-      setStatus(status, 'repo or projects.json not found on that branch', 'err');
-      return;
+      setStatus(statusEl, `repo or ${path} not found on that branch`, 'err');
+      return null;
     }
     if (!res.ok) {
-      setStatus(status, `github error: ${res.status}`, 'err');
-      return;
+      setStatus(statusEl, `github error: ${res.status}`, 'err');
+      return null;
     }
 
     const data = await res.json();
-    currentSha = data.sha;
-    projects = JSON.parse(base64ToUtf8(data.content));
-    renderEditor();
-    saveBtn.disabled = false;
-    setStatus(status, `loaded ${projects.length} project(s) from ${repo}@${branch}`, 'ok');
+    return { sha: data.sha, parsed: JSON.parse(base64ToUtf8(data.content)), repo, branch };
   } catch (err) {
-    setStatus(status, `failed to load: ${err.message}`, 'err');
+    setStatus(statusEl, `failed to load: ${err.message}`, 'err');
+    return null;
   }
+}
+
+async function saveFile(path, sha, value, message, statusEl) {
+  const { repo, branch, token } = readCfg();
+
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+      method: 'PUT',
+      headers: { ...ghHeaders(token), 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message,
+        content: utf8ToBase64(JSON.stringify(value, null, 2) + '\n'),
+        sha,
+        branch,
+      }),
+    });
+
+    if (res.status === 409) {
+      setStatus(statusEl, 'conflict: file changed elsewhere — reload and retry', 'err');
+      return null;
+    }
+    if (res.status === 401 || res.status === 403) {
+      setStatus(statusEl, 'token invalid or lacks write access', 'err');
+      return null;
+    }
+    if (!res.ok) {
+      setStatus(statusEl, `github error: ${res.status}`, 'err');
+      return null;
+    }
+
+    const data = await res.json();
+    setStatus(statusEl, 'published ✓', 'ok');
+    return data.content.sha;
+  } catch (err) {
+    setStatus(statusEl, `failed to publish: ${err.message}`, 'err');
+    return null;
+  }
+}
+
+/* ---------- drag-and-drop reorder (shared by projects + links) ---------- */
+
+function attachCardDnD(card, handle, index, list, rerender, dragRef) {
+  handle.addEventListener('dragstart', (e) => {
+    dragRef.index = index;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(index));
+  });
+
+  handle.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+    document.querySelectorAll('.dash-card').forEach((c) => {
+      c.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+  });
+
+  card.addEventListener('dragover', (e) => {
+    if (dragRef.index === null || dragRef.index === index) return;
+    e.preventDefault();
+    const before = e.clientY - card.getBoundingClientRect().top < card.offsetHeight / 2;
+    card.classList.toggle('drag-over-top', before);
+    card.classList.toggle('drag-over-bottom', !before);
+  });
+
+  card.addEventListener('dragleave', () => {
+    card.classList.remove('drag-over-top', 'drag-over-bottom');
+  });
+
+  card.addEventListener('drop', (e) => {
+    e.preventDefault();
+    card.classList.remove('drag-over-top', 'drag-over-bottom');
+    const from = dragRef.index;
+    if (from === null || from === index) return;
+
+    const before = e.clientY - card.getBoundingClientRect().top < card.offsetHeight / 2;
+    let target = before ? index : index + 1;
+    const [moved] = list.splice(from, 1);
+    if (from < target) target -= 1;
+    list.splice(target, 0, moved);
+
+    dragRef.index = null;
+    rerender();
+  });
+}
+
+function cardField(list, key, label, value, spanClass) {
+  const wrap = document.createElement('div');
+  wrap.className = `dash-card-field ${spanClass}`.trim();
+
+  const labelEl = document.createElement('label');
+  labelEl.textContent = label;
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'dash-input';
+  input.value = value || '';
+  input.addEventListener('input', (e) => {
+    const idx = Number(wrap.closest('.dash-card').dataset.index);
+    list[idx][key] = e.target.value;
+  });
+
+  wrap.append(labelEl, input);
+  return wrap;
+}
+
+/* ---------- projects editor ---------- */
+
+const projectsStatus = document.getElementById('status');
+const saveStatus = document.getElementById('save-status');
+const saveBtn = document.getElementById('save-btn');
+const editor = document.getElementById('project-editor');
+
+document.getElementById('load-projects-btn').addEventListener('click', async () => {
+  saveBtn.disabled = true;
+  const result = await loadFile(PROJECTS_PATH, projectsStatus);
+  if (!result) return;
+  projectsSha = result.sha;
+  projects = result.parsed;
+  renderEditor();
+  saveBtn.disabled = false;
+  setStatus(projectsStatus, `loaded ${projects.length} project(s) from ${result.repo}@${result.branch}`, 'ok');
 });
 
 document.getElementById('save-btn').addEventListener('click', async () => {
-  const repo = cfgRepo.value.trim();
-  const branch = cfgBranch.value.trim() || 'main';
-  const token = cfgToken.value.trim();
-
-  if (currentSha === null) {
+  if (projectsSha === null) {
     setStatus(saveStatus, 'load projects before saving', 'err');
     return;
   }
-
   const clean = projects.map((p) => ({
     year: p.year || '',
     title: p.title || '',
@@ -217,60 +338,20 @@ document.getElementById('save-btn').addEventListener('click', async () => {
     link: p.link || '#',
   }));
 
-  setStatus(saveStatus, 'publishing…');
   saveBtn.disabled = true;
-
-  try {
-    const res = await fetch(`https://api.github.com/repos/${repo}/contents/${PROJECTS_PATH}`, {
-      method: 'PUT',
-      headers: { ...ghHeaders(token), 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: 'Update projects via dashboard',
-        content: utf8ToBase64(JSON.stringify(clean, null, 2) + '\n'),
-        sha: currentSha,
-        branch,
-      }),
-    });
-
-    if (res.status === 409) {
-      setStatus(saveStatus, 'conflict: projects.json changed elsewhere — reload and retry', 'err');
-      saveBtn.disabled = false;
-      return;
-    }
-    if (res.status === 401 || res.status === 403) {
-      setStatus(saveStatus, 'token invalid or lacks write access', 'err');
-      saveBtn.disabled = false;
-      return;
-    }
-    if (!res.ok) {
-      setStatus(saveStatus, `github error: ${res.status}`, 'err');
-      saveBtn.disabled = false;
-      return;
-    }
-
-    const data = await res.json();
-    currentSha = data.content.sha;
-    setStatus(saveStatus, 'published ✓', 'ok');
-  } catch (err) {
-    setStatus(saveStatus, `failed to publish: ${err.message}`, 'err');
-  } finally {
-    saveBtn.disabled = false;
-  }
+  const newSha = await saveFile(PROJECTS_PATH, projectsSha, clean, 'Update projects via dashboard', saveStatus);
+  if (newSha) projectsSha = newSha;
+  saveBtn.disabled = false;
 });
-
-/* ---------- editor ---------- */
-
-const editor = document.getElementById('project-editor');
-let draggedIndex = null;
 
 function renderEditor() {
   editor.innerHTML = '';
   projects.forEach((p, index) => {
-    editor.appendChild(buildCard(p, index));
+    editor.appendChild(buildProjectCard(p, index));
   });
 }
 
-function buildCard(p, index) {
+function buildProjectCard(p, index) {
   const card = document.createElement('div');
   card.className = 'dash-card';
   card.dataset.index = String(index);
@@ -299,79 +380,112 @@ function buildCard(p, index) {
 
   const fields = document.createElement('div');
   fields.className = 'dash-card-fields';
-  fields.appendChild(cardField('year', 'Year', p.year, ''));
-  fields.appendChild(cardField('title', 'Title', p.title, 'span-2'));
-  fields.appendChild(cardField('desc', 'Description', p.desc, 'span-3'));
-  fields.appendChild(cardField('tag', 'Tag', p.tag, ''));
-  fields.appendChild(cardField('link', 'Link', p.link, 'span-2'));
+  fields.appendChild(cardField(projects, 'year', 'Year', p.year, ''));
+  fields.appendChild(cardField(projects, 'title', 'Title', p.title, 'span-2'));
+  fields.appendChild(cardField(projects, 'desc', 'Description', p.desc, 'span-3'));
+  fields.appendChild(cardField(projects, 'tag', 'Tag', p.tag, ''));
+  fields.appendChild(cardField(projects, 'link', 'Link', p.link, 'span-2'));
 
   card.append(header, fields);
-
-  handle.addEventListener('dragstart', (e) => {
-    draggedIndex = index;
-    card.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', String(index));
-  });
-
-  handle.addEventListener('dragend', () => {
-    card.classList.remove('dragging');
-    editor.querySelectorAll('.dash-card').forEach((c) => {
-      c.classList.remove('drag-over-top', 'drag-over-bottom');
-    });
-  });
-
-  card.addEventListener('dragover', (e) => {
-    if (draggedIndex === null || draggedIndex === index) return;
-    e.preventDefault();
-    const before = e.clientY - card.getBoundingClientRect().top < card.offsetHeight / 2;
-    card.classList.toggle('drag-over-top', before);
-    card.classList.toggle('drag-over-bottom', !before);
-  });
-
-  card.addEventListener('dragleave', () => {
-    card.classList.remove('drag-over-top', 'drag-over-bottom');
-  });
-
-  card.addEventListener('drop', (e) => {
-    e.preventDefault();
-    card.classList.remove('drag-over-top', 'drag-over-bottom');
-    if (draggedIndex === null || draggedIndex === index) return;
-
-    const before = e.clientY - card.getBoundingClientRect().top < card.offsetHeight / 2;
-    let target = before ? index : index + 1;
-    const [moved] = projects.splice(draggedIndex, 1);
-    if (draggedIndex < target) target -= 1;
-    projects.splice(target, 0, moved);
-
-    draggedIndex = null;
-    renderEditor();
-  });
-
+  attachCardDnD(card, handle, index, projects, renderEditor, projectsDrag);
   return card;
-}
-
-function cardField(key, label, value, spanClass) {
-  const wrap = document.createElement('div');
-  wrap.className = `dash-card-field ${spanClass}`.trim();
-
-  const labelEl = document.createElement('label');
-  labelEl.textContent = label;
-
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.className = 'dash-input';
-  input.value = value || '';
-  input.addEventListener('input', (e) => {
-    const idx = Number(wrap.closest('.dash-card').dataset.index);
-    projects[idx][key] = e.target.value;
-  });
-
-  wrap.append(labelEl, input);
-  return wrap;
 }
 
 document.getElementById('add-btn').addEventListener('click', () => {
   projects.push({ year: '', title: '', desc: '', tag: '', link: '' });
   renderEditor();
+});
+
+/* ---------- about editor ---------- */
+
+const aboutStatus = document.getElementById('about-status');
+const saveAboutBtn = document.getElementById('save-about-btn');
+const aboutBioInput = document.getElementById('about-bio');
+const aboutEmailInput = document.getElementById('about-email');
+const linkEditor = document.getElementById('link-editor');
+
+aboutBioInput.addEventListener('input', (e) => { aboutData.bio = e.target.value; });
+aboutEmailInput.addEventListener('input', (e) => { aboutData.email = e.target.value; });
+
+document.getElementById('load-about-btn').addEventListener('click', async () => {
+  saveAboutBtn.disabled = true;
+  const result = await loadFile(ABOUT_PATH, aboutStatus);
+  if (!result) return;
+  aboutSha = result.sha;
+  aboutData = {
+    bio: result.parsed.bio || '',
+    email: result.parsed.email || '',
+    links: result.parsed.links || [],
+  };
+  aboutBioInput.value = aboutData.bio;
+  aboutEmailInput.value = aboutData.email;
+  renderLinkEditor();
+  saveAboutBtn.disabled = false;
+  setStatus(aboutStatus, `loaded about section from ${result.repo}@${result.branch}`, 'ok');
+});
+
+document.getElementById('save-about-btn').addEventListener('click', async () => {
+  if (aboutSha === null) {
+    setStatus(aboutStatus, 'load the about section before saving', 'err');
+    return;
+  }
+  const clean = {
+    bio: aboutBioInput.value || '',
+    email: aboutEmailInput.value || '',
+    links: aboutData.links.map((l) => ({ label: l.label || '', url: l.url || '#' })),
+  };
+
+  saveAboutBtn.disabled = true;
+  const newSha = await saveFile(ABOUT_PATH, aboutSha, clean, 'Update about section via dashboard', aboutStatus);
+  if (newSha) aboutSha = newSha;
+  saveAboutBtn.disabled = false;
+});
+
+function renderLinkEditor() {
+  linkEditor.innerHTML = '';
+  aboutData.links.forEach((l, index) => {
+    linkEditor.appendChild(buildLinkCard(l, index));
+  });
+}
+
+function buildLinkCard(l, index) {
+  const card = document.createElement('div');
+  card.className = 'dash-card';
+  card.dataset.index = String(index);
+
+  const header = document.createElement('div');
+  header.className = 'dash-card-header';
+
+  const handle = document.createElement('span');
+  handle.className = 'dash-drag-handle mono';
+  handle.setAttribute('draggable', 'true');
+  handle.title = 'drag to reorder';
+  handle.textContent = '⋮⋮';
+
+  const delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.textContent = 'delete';
+  delBtn.className = 'dash-delete-btn';
+  delBtn.addEventListener('click', () => {
+    if (confirm(`Delete "${l.label || 'this link'}"?`)) {
+      aboutData.links.splice(index, 1);
+      renderLinkEditor();
+    }
+  });
+
+  header.append(handle, delBtn);
+
+  const fields = document.createElement('div');
+  fields.className = 'dash-card-fields';
+  fields.appendChild(cardField(aboutData.links, 'label', 'Label', l.label, ''));
+  fields.appendChild(cardField(aboutData.links, 'url', 'URL', l.url, 'span-2'));
+
+  card.append(header, fields);
+  attachCardDnD(card, handle, index, aboutData.links, renderLinkEditor, linksDrag);
+  return card;
+}
+
+document.getElementById('add-link-btn').addEventListener('click', () => {
+  aboutData.links.push({ label: '', url: '' });
+  renderLinkEditor();
 });

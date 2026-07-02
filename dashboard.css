@@ -47,6 +47,19 @@
   border-color: var(--soft);
 }
 
+.dash-textarea {
+  font-family: 'Inter', Helvetica, Arial, sans-serif;
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.dash-subheading {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 24px 0 12px;
+}
+
 .dash-btn {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
