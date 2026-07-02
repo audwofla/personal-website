@@ -12,5 +12,12 @@
     "desc": "Full-stack lesson management app for students, scheduling, and logistics, with Google Maps + OR-Tools route optimization to reduce teacher travel time.",
     "tag": "JavaScript",
     "link": "https://github.com/audwofla/Lesson-RouteMaster"
+  },
+  {
+    "year": "2025",
+    "title": "Aramalyze",
+    "desc": "End-to-end ARAM analytics pipeline",
+    "tag": "Python",
+    "link": "https://github.com/audwofla/Aramalyze"
   }
 ]
