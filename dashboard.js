@@ -10,7 +10,8 @@ let projects = [];
 let projectsSha = null;
 const projectsDrag = { index: null };
 
-let aboutData = { heroRole: '', heroBio: '', bio: '', email: '', links: [] };
+let aboutData = { heroPhoto: '', heroRole: '', heroBio: '', bio: '', email: '', links: [] };
+let heroPhotoPending = null;
 let aboutSha = null;
 const linksDrag = { index: null };
 
@@ -157,6 +158,78 @@ async function ghJson(url, opts, token) {
   if (res.status === 409 || res.status === 422) throw new Error('conflict: repo changed elsewhere — reload and retry');
   if (!res.ok) throw new Error(`github error: ${res.status}`);
   return res.status === 204 ? null : res.json();
+}
+
+/**
+ * Publishes any number of binary files + JSON text files in a single commit
+ * via the Git Data API (blobs -> tree -> commit -> ref update), so a batch
+ * of changes doesn't trigger one Pages deploy per file.
+ * binaryFiles: [{ path, base64 }], textFiles: [{ path, value }]
+ * Returns the created tree (tree.tree[].sha lets callers pick up new blob
+ * shas for optimistic-concurrency tracking).
+ */
+async function publishTree(repo, branch, token, binaryFiles, textFiles, message) {
+  const refData = await ghJson(
+    `https://api.github.com/repos/${repo}/git/ref/heads/${encodeURIComponent(branch)}`, {}, token
+  );
+  const latestCommitSha = refData.object.sha;
+
+  const commitData = await ghJson(
+    `https://api.github.com/repos/${repo}/git/commits/${latestCommitSha}`, {}, token
+  );
+  const baseTreeSha = commitData.tree.sha;
+
+  const blobs = await Promise.all(binaryFiles.map((f) => ghJson(
+    `https://api.github.com/repos/${repo}/git/blobs`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: f.base64, encoding: 'base64' }),
+    },
+    token
+  )));
+
+  const treeEntries = binaryFiles.map((f, i) => ({ path: f.path, mode: '100644', type: 'blob', sha: blobs[i].sha }));
+  for (const f of textFiles) {
+    treeEntries.push({
+      path: f.path,
+      mode: '100644',
+      type: 'blob',
+      content: JSON.stringify(f.value, null, 2) + '\n',
+    });
+  }
+
+  const newTree = await ghJson(
+    `https://api.github.com/repos/${repo}/git/trees`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries }),
+    },
+    token
+  );
+
+  const newCommit = await ghJson(
+    `https://api.github.com/repos/${repo}/git/commits`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, tree: newTree.sha, parents: [latestCommitSha] }),
+    },
+    token
+  );
+
+  await ghJson(
+    `https://api.github.com/repos/${repo}/git/refs/heads/${encodeURIComponent(branch)}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sha: newCommit.sha }),
+    },
+    token
+  );
+
+  return newTree;
 }
 
 function readCfg() {
@@ -414,6 +487,8 @@ document.getElementById('add-btn').addEventListener('click', () => {
 
 const aboutStatus = document.getElementById('about-status');
 const saveAboutBtn = document.getElementById('save-about-btn');
+const heroPhotoThumb = document.getElementById('hero-photo-thumb');
+const heroPhotoInput = document.getElementById('hero-photo-input');
 const heroRoleInput = document.getElementById('hero-role-input');
 const heroBioInput = document.getElementById('hero-bio-input');
 const aboutBioInput = document.getElementById('about-bio');
@@ -425,18 +500,43 @@ heroBioInput.addEventListener('input', (e) => { aboutData.heroBio = e.target.val
 aboutBioInput.addEventListener('input', (e) => { aboutData.bio = e.target.value; });
 aboutEmailInput.addEventListener('input', (e) => { aboutData.email = e.target.value; });
 
+function renderHeroPhotoThumb() {
+  const src = heroPhotoPending ? heroPhotoPending.dataUrl : aboutData.heroPhoto;
+  heroPhotoThumb.src = src || '';
+  heroPhotoThumb.style.display = src ? '' : 'none';
+}
+
+document.getElementById('choose-hero-photo-btn').addEventListener('click', () => heroPhotoInput.click());
+
+heroPhotoInput.addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+
+  try {
+    const { base64, dataUrl } = await compressImage(file);
+    heroPhotoPending = { path: 'photos/hero.jpg', base64, dataUrl };
+    renderHeroPhotoThumb();
+  } catch (err) {
+    setStatus(aboutStatus, `couldn't use ${file.name}: ${err.message}`, 'err');
+  }
+});
+
 document.getElementById('load-about-btn').addEventListener('click', async () => {
   saveAboutBtn.disabled = true;
   const result = await loadFile(ABOUT_PATH, aboutStatus);
   if (!result) return;
   aboutSha = result.sha;
   aboutData = {
+    heroPhoto: result.parsed.heroPhoto || '',
     heroRole: result.parsed.heroRole || '',
     heroBio: result.parsed.heroBio || '',
     bio: result.parsed.bio || '',
     email: result.parsed.email || '',
     links: result.parsed.links || [],
   };
+  heroPhotoPending = null;
+  renderHeroPhotoThumb();
   heroRoleInput.value = aboutData.heroRole;
   heroBioInput.value = aboutData.heroBio;
   aboutBioInput.value = aboutData.bio;
@@ -452,6 +552,7 @@ document.getElementById('save-about-btn').addEventListener('click', async () => 
     return;
   }
   const clean = {
+    heroPhoto: heroPhotoPending ? heroPhotoPending.path : aboutData.heroPhoto,
     heroRole: heroRoleInput.value || '',
     heroBio: heroBioInput.value || '',
     bio: aboutBioInput.value || '',
@@ -460,9 +561,32 @@ document.getElementById('save-about-btn').addEventListener('click', async () => 
   };
 
   saveAboutBtn.disabled = true;
-  const newSha = await saveFile(ABOUT_PATH, aboutSha, clean, 'Update about section via dashboard', aboutStatus);
-  if (newSha) aboutSha = newSha;
-  saveAboutBtn.disabled = false;
+  setStatus(aboutStatus, 'publishing…');
+
+  try {
+    if (heroPhotoPending) {
+      const { repo, branch, token } = readCfg();
+      const newTree = await publishTree(
+        repo, branch, token,
+        [{ path: heroPhotoPending.path, base64: heroPhotoPending.base64 }],
+        [{ path: ABOUT_PATH, value: clean }],
+        'Update about section via dashboard'
+      );
+      const entry = newTree.tree.find((e) => e.path === ABOUT_PATH);
+      if (entry) aboutSha = entry.sha;
+      aboutData.heroPhoto = heroPhotoPending.path;
+      heroPhotoPending = null;
+      renderHeroPhotoThumb();
+      setStatus(aboutStatus, 'published ✓', 'ok');
+    } else {
+      const newSha = await saveFile(ABOUT_PATH, aboutSha, clean, 'Update about section via dashboard', aboutStatus);
+      if (newSha) aboutSha = newSha;
+    }
+  } catch (err) {
+    setStatus(aboutStatus, err.message, 'err');
+  } finally {
+    saveAboutBtn.disabled = false;
+  }
 });
 
 function renderLinkEditor() {
@@ -615,72 +739,20 @@ document.getElementById('save-photos-btn').addEventListener('click', async () =>
   setStatus(photosStatus, 'publishing…');
 
   try {
-    const refData = await ghJson(
-      `https://api.github.com/repos/${repo}/git/ref/heads/${encodeURIComponent(branch)}`, {}, token
-    );
-    const latestCommitSha = refData.object.sha;
-
-    const commitData = await ghJson(
-      `https://api.github.com/repos/${repo}/git/commits/${latestCommitSha}`, {}, token
-    );
-    const baseTreeSha = commitData.tree.sha;
-
     const pending = photoEntries.filter((p) => p._status === 'pending');
-    const blobs = await Promise.all(pending.map((p) => ghJson(
-      `https://api.github.com/repos/${repo}/git/blobs`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: p._base64, encoding: 'base64' }),
-      },
-      token
-    )));
-    pending.forEach((p, i) => { p._blobSha = blobs[i].sha; });
-
     const manifest = photoEntries.map((p) => ({ src: p.src, label: p.label || '' }));
-    const treeEntries = pending.map((p) => ({ path: p.src, mode: '100644', type: 'blob', sha: p._blobSha }));
-    treeEntries.push({
-      path: PHOTOS_PATH,
-      mode: '100644',
-      type: 'blob',
-      content: JSON.stringify(manifest, null, 2) + '\n',
-    });
 
-    const newTree = await ghJson(
-      `https://api.github.com/repos/${repo}/git/trees`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries }),
-      },
-      token
-    );
-
-    const newCommit = await ghJson(
-      `https://api.github.com/repos/${repo}/git/commits`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'Update photos via dashboard', tree: newTree.sha, parents: [latestCommitSha] }),
-      },
-      token
-    );
-
-    await ghJson(
-      `https://api.github.com/repos/${repo}/git/refs/heads/${encodeURIComponent(branch)}`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sha: newCommit.sha }),
-      },
-      token
+    await publishTree(
+      repo, branch, token,
+      pending.map((p) => ({ path: p.src, base64: p._base64 })),
+      [{ path: PHOTOS_PATH, value: manifest }],
+      'Update photos via dashboard'
     );
 
     photoEntries.forEach((p) => {
       if (p._status === 'pending') {
         p._status = 'existing';
         delete p._base64;
-        delete p._blobSha;
       }
     });
     renderPhotoEditor();
