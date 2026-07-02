@@ -1,9 +1,16 @@
 [
   {
-    "year": "2025",
+    "year": "2026",
     "title": "Gear Tracker",
     "desc": "Reddit marketplace watcher for used camera gear that tracks listings, price history, and aliases, using Claude for messy matches",
     "tag": "Python",
-    "link": "https://github.com/audwofla/gear-tracker"
+    "link": "#https://github.com/audwofla/gear-tracker"
+  },
+  {
+    "year": "2025",
+    "title": "Lesson RouteMaster",
+    "desc": "Full-stack lesson management app for students, scheduling, and logistics, with Google Maps + OR-Tools route optimization to reduce teacher travel time.",
+    "tag": "JavaScript",
+    "link": "#https://github.com/audwofla/Lesson-RouteMaster"
   }
 ]
