@@ -79,6 +79,21 @@
 
       <section class="dash-panel">
         <div class="section-header">
+          <span class="mono section-num">02</span>
+          <h2>Photography</h2>
+        </div>
+        <input type="file" id="photo-file-input" accept="image/*" multiple style="display:none">
+        <div id="photo-editor" class="dash-editor"></div>
+        <div class="dash-actions">
+          <button type="button" class="dash-btn" id="load-photos-btn">Load photos</button>
+          <button type="button" class="dash-btn" id="add-photos-btn">+ add photos</button>
+          <button type="button" class="dash-btn dash-btn-primary" id="save-photos-btn" disabled>Save &amp; publish</button>
+        </div>
+        <div class="mono dash-status" id="photos-status"></div>
+      </section>
+
+      <section class="dash-panel">
+        <div class="section-header">
           <span class="mono section-num">04</span>
           <h2>About</h2>
         </div>

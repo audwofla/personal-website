@@ -1,5 +1,6 @@
 const PROJECTS_PATH = 'projects.json';
 const ABOUT_PATH = 'about.json';
+const PHOTOS_PATH = 'photos.json';
 const LS_PW_HASH = 'dash_pw_hash';
 const LS_REPO = 'dash_cfg_repo';
 const LS_BRANCH = 'dash_cfg_branch';
@@ -12,6 +13,10 @@ const projectsDrag = { index: null };
 let aboutData = { bio: '', email: '', links: [] };
 let aboutSha = null;
 const linksDrag = { index: null };
+
+let photoEntries = [];
+let photosLoaded = false;
+const photosDrag = { index: null };
 
 /* ---------- crypto helpers ---------- */
 
@@ -143,6 +148,15 @@ function ghHeaders(token) {
     Authorization: `Bearer ${token}`,
     Accept: 'application/vnd.github+json',
   };
+}
+
+async function ghJson(url, opts, token) {
+  const res = await fetch(url, { ...opts, headers: { ...ghHeaders(token), ...(opts && opts.headers) } });
+  if (res.status === 401 || res.status === 403) throw new Error('token invalid or lacks write access');
+  if (res.status === 404) throw new Error('not found');
+  if (res.status === 409 || res.status === 422) throw new Error('conflict: repo changed elsewhere — reload and retry');
+  if (!res.ok) throw new Error(`github error: ${res.status}`);
+  return res.status === 204 ? null : res.json();
 }
 
 function readCfg() {
@@ -489,3 +503,244 @@ document.getElementById('add-link-btn').addEventListener('click', () => {
   aboutData.links.push({ label: '', url: '' });
   renderLinkEditor();
 });
+
+/* ---------- photos editor ---------- */
+
+const photosStatus = document.getElementById('photos-status');
+const savePhotosBtn = document.getElementById('save-photos-btn');
+const photoEditor = document.getElementById('photo-editor');
+const photoFileInput = document.getElementById('photo-file-input');
+
+function sanitizeFilename(name) {
+  const base = name.replace(/\.[^.]+$/, '');
+  const slug = base.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-+|-+$)/g, '');
+  return `${slug || 'photo'}.jpg`;
+}
+
+function defaultLabelFromFilename(name) {
+  return name.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').trim();
+}
+
+function compressImage(file, maxDim = 2000, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const scale = maxDim / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob((blob) => {
+        if (!blob) { reject(new Error('image encode failed')); return; }
+        const reader = new FileReader();
+        reader.onload = () => resolve({ dataUrl: reader.result, base64: reader.result.split(',')[1] });
+        reader.onerror = () => reject(new Error('failed to read compressed image'));
+        reader.readAsDataURL(blob);
+      }, 'image/jpeg', quality);
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error(`couldn't decode ${file.name}`));
+    };
+
+    img.src = objectUrl;
+  });
+}
+
+document.getElementById('add-photos-btn').addEventListener('click', () => photoFileInput.click());
+
+photoFileInput.addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files || []);
+  e.target.value = '';
+
+  for (const file of files) {
+    try {
+      const { base64, dataUrl } = await compressImage(file);
+      const path = `photos/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${sanitizeFilename(file.name)}`;
+      photoEntries.push({
+        src: path,
+        label: defaultLabelFromFilename(file.name),
+        _status: 'pending',
+        _base64: base64,
+        _previewUrl: dataUrl,
+      });
+      renderPhotoEditor();
+    } catch (err) {
+      setStatus(photosStatus, `skipped ${file.name}: ${err.message}`, 'err');
+    }
+  }
+
+  savePhotosBtn.disabled = !photosLoaded;
+});
+
+document.getElementById('load-photos-btn').addEventListener('click', async () => {
+  savePhotosBtn.disabled = true;
+  const result = await loadFile(PHOTOS_PATH, photosStatus);
+  if (!result) return;
+  photoEntries = (result.parsed || []).map((p) => ({ src: p.src, label: p.label || '', _status: 'existing' }));
+  photosLoaded = true;
+  renderPhotoEditor();
+  savePhotosBtn.disabled = false;
+  setStatus(photosStatus, `loaded ${photoEntries.length} photo(s) from ${result.repo}@${result.branch}`, 'ok');
+});
+
+document.getElementById('save-photos-btn').addEventListener('click', async () => {
+  if (!photosLoaded) {
+    setStatus(photosStatus, 'load photos before saving', 'err');
+    return;
+  }
+
+  const { repo, branch, token } = readCfg();
+  savePhotosBtn.disabled = true;
+  setStatus(photosStatus, 'publishing…');
+
+  try {
+    const refData = await ghJson(
+      `https://api.github.com/repos/${repo}/git/ref/heads/${encodeURIComponent(branch)}`, {}, token
+    );
+    const latestCommitSha = refData.object.sha;
+
+    const commitData = await ghJson(
+      `https://api.github.com/repos/${repo}/git/commits/${latestCommitSha}`, {}, token
+    );
+    const baseTreeSha = commitData.tree.sha;
+
+    const pending = photoEntries.filter((p) => p._status === 'pending');
+    const blobs = await Promise.all(pending.map((p) => ghJson(
+      `https://api.github.com/repos/${repo}/git/blobs`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: p._base64, encoding: 'base64' }),
+      },
+      token
+    )));
+    pending.forEach((p, i) => { p._blobSha = blobs[i].sha; });
+
+    const manifest = photoEntries.map((p) => ({ src: p.src, label: p.label || '' }));
+    const treeEntries = pending.map((p) => ({ path: p.src, mode: '100644', type: 'blob', sha: p._blobSha }));
+    treeEntries.push({
+      path: PHOTOS_PATH,
+      mode: '100644',
+      type: 'blob',
+      content: JSON.stringify(manifest, null, 2) + '\n',
+    });
+
+    const newTree = await ghJson(
+      `https://api.github.com/repos/${repo}/git/trees`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries }),
+      },
+      token
+    );
+
+    const newCommit = await ghJson(
+      `https://api.github.com/repos/${repo}/git/commits`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Update photos via dashboard', tree: newTree.sha, parents: [latestCommitSha] }),
+      },
+      token
+    );
+
+    await ghJson(
+      `https://api.github.com/repos/${repo}/git/refs/heads/${encodeURIComponent(branch)}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sha: newCommit.sha }),
+      },
+      token
+    );
+
+    photoEntries.forEach((p) => {
+      if (p._status === 'pending') {
+        p._status = 'existing';
+        delete p._base64;
+        delete p._blobSha;
+      }
+    });
+    renderPhotoEditor();
+    setStatus(photosStatus, `published ✓ (${pending.length} new photo(s))`, 'ok');
+  } catch (err) {
+    setStatus(photosStatus, err.message, 'err');
+  } finally {
+    savePhotosBtn.disabled = false;
+  }
+});
+
+function renderPhotoEditor() {
+  photoEditor.innerHTML = '';
+  photoEntries.forEach((p, index) => {
+    photoEditor.appendChild(buildPhotoCard(p, index));
+  });
+}
+
+function buildPhotoCard(p, index) {
+  const card = document.createElement('div');
+  card.className = 'dash-card';
+  card.dataset.index = String(index);
+
+  const header = document.createElement('div');
+  header.className = 'dash-card-header';
+
+  const handle = document.createElement('span');
+  handle.className = 'dash-drag-handle mono';
+  handle.setAttribute('draggable', 'true');
+  handle.title = 'drag to reorder';
+  handle.textContent = '⋮⋮';
+
+  const right = document.createElement('div');
+  right.className = 'dash-card-header-right';
+
+  if (p._status === 'pending') {
+    const badge = document.createElement('span');
+    badge.className = 'mono dash-badge';
+    badge.textContent = 'new — not published';
+    right.appendChild(badge);
+  }
+
+  const delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.textContent = 'delete';
+  delBtn.className = 'dash-delete-btn';
+  delBtn.addEventListener('click', () => {
+    if (confirm(`Delete "${p.label || 'this photo'}"?`)) {
+      photoEntries.splice(index, 1);
+      renderPhotoEditor();
+    }
+  });
+  right.appendChild(delBtn);
+
+  header.append(handle, right);
+
+  const body = document.createElement('div');
+  body.className = 'dash-photo-body';
+
+  const thumb = document.createElement('img');
+  thumb.className = 'dash-photo-thumb';
+  thumb.src = p._previewUrl || p.src;
+  thumb.alt = '';
+
+  const fields = document.createElement('div');
+  fields.className = 'dash-card-fields dash-photo-fields';
+  fields.appendChild(cardField(photoEntries, 'label', 'Label', p.label, ''));
+
+  body.append(thumb, fields);
+  card.append(header, body);
+  attachCardDnD(card, handle, index, photoEntries, renderPhotoEditor, photosDrag);
+  return card;
+}
