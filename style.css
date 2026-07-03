@@ -15,6 +15,7 @@
   --nav-bg: rgba(253, 253, 252, 0.88);
   --text-strong: #4a4740;
   --ink-hover: #322f2a;
+  --accent: #a8563d;
   --content-max: 1400px;
   --edge-pad: clamp(24px, 4vw, 48px);
 }
@@ -27,6 +28,7 @@
   --soft: #b3ada2;
   --border: #2e2b25;
   --hover-bg: #1e1c17;
+  --accent: #dd9470;
   --nav-bg: rgba(21, 20, 15, 0.88);
   --text-strong: #d9d6cd;
   --ink-hover: #ded9d0;
@@ -119,7 +121,7 @@ nav {
 }
 
 .nav-links a:hover {
-  color: var(--ink);
+  color: var(--accent);
 }
 
 .theme-toggle {
@@ -134,7 +136,7 @@ nav {
 }
 
 .theme-toggle:hover {
-  color: var(--ink);
+  color: var(--accent);
 }
 
 /* HERO */
@@ -184,7 +186,7 @@ nav {
 
 .section-num {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--accent);
 }
 
 .section-header h2 {
@@ -398,7 +400,7 @@ nav {
 
 .contact-link:hover,
 .contact-email:hover {
-  color: var(--muted);
+  color: var(--accent);
 }
 
 /* FOOTER */
