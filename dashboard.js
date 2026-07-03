@@ -107,6 +107,7 @@ function unlock() {
   gate.style.display = 'none';
   dashboardEl.style.display = '';
   loadCfgFromStorage();
+  selectTab('projects');
 }
 
 function lock() {
@@ -120,6 +121,29 @@ function lock() {
 document.getElementById('lock-btn').addEventListener('click', lock);
 
 renderGateMode();
+
+/* ---------- tabs ---------- */
+
+const tabButtons = document.querySelectorAll('.dash-tab');
+const tabPanels = document.querySelectorAll('[data-tab-panel]');
+
+const tabLoadButtonId = {
+  projects: 'load-projects-btn',
+  photos: 'load-photos-btn',
+  about: 'load-about-btn',
+  resume: null,
+};
+
+function selectTab(tab) {
+  tabButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.tab === tab));
+  tabPanels.forEach((panel) => { panel.hidden = panel.dataset.tabPanel !== tab; });
+  const loadBtnId = tabLoadButtonId[tab];
+  if (loadBtnId) document.getElementById(loadBtnId).click();
+}
+
+tabButtons.forEach((btn) => {
+  btn.addEventListener('click', () => selectTab(btn.dataset.tab));
+});
 
 /* ---------- github config ---------- */
 

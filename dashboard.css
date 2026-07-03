@@ -154,6 +154,36 @@
   margin-bottom: 64px;
 }
 
+.dash-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 40px;
+}
+
+.dash-tab {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg);
+  color: var(--soft);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.dash-tab:hover {
+  background: var(--hover-bg);
+  border-color: var(--soft);
+}
+
+.dash-tab.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
 .dash-field-row {
   display: grid;
   grid-template-columns: 100px 1fr;
