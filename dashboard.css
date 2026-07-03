@@ -294,6 +294,12 @@
   gap: 16px;
 }
 
+.dash-resume-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .dash-photo-fields {
   flex: 1;
   display: flex;

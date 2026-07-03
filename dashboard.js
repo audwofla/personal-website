@@ -826,3 +826,62 @@ function buildPhotoCard(p, index) {
   attachCardDnD(card, handle, index, photoEntries, renderPhotoEditor, photosDrag);
   return card;
 }
+
+/* ---------- resume ---------- */
+
+let resumePending = null;
+const resumeStatus = document.getElementById('resume-status');
+const saveResumeBtn = document.getElementById('save-resume-btn');
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = () => reject(new Error('failed to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('choose-resume-btn').addEventListener('click', () => {
+  document.getElementById('resume-file-input').click();
+});
+
+document.getElementById('resume-file-input').addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+
+  if (file.type !== 'application/pdf') {
+    setStatus(resumeStatus, 'please choose a PDF file', 'err');
+    return;
+  }
+
+  try {
+    resumePending = { base64: await fileToBase64(file), name: file.name };
+    setStatus(resumeStatus, `ready to publish: ${file.name}`, 'ok');
+    saveResumeBtn.disabled = false;
+  } catch (err) {
+    setStatus(resumeStatus, err.message, 'err');
+  }
+});
+
+document.getElementById('save-resume-btn').addEventListener('click', async () => {
+  if (!resumePending) return;
+  const { repo, branch, token } = readCfg();
+  saveResumeBtn.disabled = true;
+  setStatus(resumeStatus, 'publishing…');
+
+  try {
+    await publishTree(
+      repo, branch, token,
+      [{ path: 'resume.pdf', base64: resumePending.base64 }],
+      [],
+      'Update resume via dashboard'
+    );
+    resumePending = null;
+    setStatus(resumeStatus, 'published ✓', 'ok');
+  } catch (err) {
+    setStatus(resumeStatus, err.message, 'err');
+    saveResumeBtn.disabled = false;
+  }
+});

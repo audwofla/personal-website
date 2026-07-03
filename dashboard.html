@@ -140,6 +140,25 @@
         </div>
         <div class="mono dash-status" id="about-status"></div>
       </section>
+
+      <section class="dash-panel">
+        <div class="section-header">
+          <span class="mono section-num">cv</span>
+          <h2>Resume</h2>
+        </div>
+        <div class="dash-field-row">
+          <label class="mono dash-label">file</label>
+          <div class="dash-resume-row">
+            <input type="file" id="resume-file-input" accept="application/pdf" style="display:none">
+            <button type="button" class="dash-btn" id="choose-resume-btn">Choose PDF</button>
+            <a href="resume.pdf" target="_blank" class="mono contact-link">current: resume.pdf ↗</a>
+          </div>
+        </div>
+        <div class="dash-actions">
+          <button type="button" class="dash-btn dash-btn-primary" id="save-resume-btn" disabled>Save &amp; publish</button>
+        </div>
+        <div class="mono dash-status" id="resume-status"></div>
+      </section>
     </main>
   </div>
 
