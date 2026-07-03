@@ -10,7 +10,7 @@ let projects = [];
 let projectsSha = null;
 const projectsDrag = { index: null };
 
-let aboutData = { heroPhoto: '', heroRole: '', heroBio: '', bio: '', email: '', links: [] };
+let aboutData = { heroPhoto: '', bio: '', email: '', links: [] };
 let heroPhotoPending = null;
 let aboutSha = null;
 const linksDrag = { index: null };
@@ -513,14 +513,10 @@ const aboutStatus = document.getElementById('about-status');
 const saveAboutBtn = document.getElementById('save-about-btn');
 const heroPhotoThumb = document.getElementById('hero-photo-thumb');
 const heroPhotoInput = document.getElementById('hero-photo-input');
-const heroRoleInput = document.getElementById('hero-role-input');
-const heroBioInput = document.getElementById('hero-bio-input');
 const aboutBioInput = document.getElementById('about-bio');
 const aboutEmailInput = document.getElementById('about-email');
 const linkEditor = document.getElementById('link-editor');
 
-heroRoleInput.addEventListener('input', (e) => { aboutData.heroRole = e.target.value; });
-heroBioInput.addEventListener('input', (e) => { aboutData.heroBio = e.target.value; });
 aboutBioInput.addEventListener('input', (e) => { aboutData.bio = e.target.value; });
 aboutEmailInput.addEventListener('input', (e) => { aboutData.email = e.target.value; });
 
@@ -553,16 +549,12 @@ document.getElementById('load-about-btn').addEventListener('click', async () => 
   aboutSha = result.sha;
   aboutData = {
     heroPhoto: result.parsed.heroPhoto || '',
-    heroRole: result.parsed.heroRole || '',
-    heroBio: result.parsed.heroBio || '',
     bio: result.parsed.bio || '',
     email: result.parsed.email || '',
     links: result.parsed.links || [],
   };
   heroPhotoPending = null;
   renderHeroPhotoThumb();
-  heroRoleInput.value = aboutData.heroRole;
-  heroBioInput.value = aboutData.heroBio;
   aboutBioInput.value = aboutData.bio;
   aboutEmailInput.value = aboutData.email;
   renderLinkEditor();
@@ -577,8 +569,6 @@ document.getElementById('save-about-btn').addEventListener('click', async () => 
   }
   const clean = {
     heroPhoto: heroPhotoPending ? heroPhotoPending.path : aboutData.heroPhoto,
-    heroRole: heroRoleInput.value || '',
-    heroBio: heroBioInput.value || '',
     bio: aboutBioInput.value || '',
     email: aboutEmailInput.value || '',
     links: aboutData.links.map((l) => ({ label: l.label || '', url: l.url || '#' })),

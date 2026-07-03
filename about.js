@@ -1,8 +1,6 @@
 async function renderAbout() {
   const heroPhotoWrap = document.getElementById('hero-photo-wrap');
   const heroPhotoEl = document.getElementById('hero-photo');
-  const heroRoleEl = document.getElementById('hero-role');
-  const heroBioEl = document.getElementById('hero-bio');
   const bioEl = document.getElementById('about-bio');
   const emailEl = document.getElementById('about-email');
   const linksWrap = document.getElementById('about-links');
@@ -16,8 +14,6 @@ async function renderAbout() {
       heroPhotoEl.src = data.heroPhoto;
       heroPhotoWrap.style.display = '';
     }
-    if (data.heroRole && heroRoleEl) heroRoleEl.textContent = data.heroRole;
-    if (data.heroBio && heroBioEl) heroBioEl.textContent = data.heroBio;
     if (data.bio && bioEl) bioEl.textContent = data.bio;
 
     if (data.email && emailEl) {
