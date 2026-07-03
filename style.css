@@ -175,6 +175,10 @@ nav {
   margin: 0 auto;
 }
 
+#work {
+  padding-top: clamp(60px, 10vw, 120px);
+}
+
 .section-header {
   display: flex;
   align-items: baseline;
