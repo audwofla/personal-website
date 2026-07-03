@@ -21,7 +21,7 @@
 }
 
 [data-theme="dark"] {
-  --bg: #15140f;
+  --bg: #1a1813;
   --ink: #f1efe9;
   --muted: #948f85;
   --dim: #5c584f;
@@ -29,7 +29,7 @@
   --border: #2e2b25;
   --hover-bg: #1e1c17;
   --accent: #dd9470;
-  --nav-bg: rgba(21, 20, 15, 0.88);
+  --nav-bg: rgba(26, 24, 19, 0.88);
   --text-strong: #d9d6cd;
   --ink-hover: #ded9d0;
 }
