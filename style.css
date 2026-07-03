@@ -5,39 +5,35 @@
 }
 
 :root {
-  --bg: #fdfdfc;
-  --ink: #161513;
-  --muted: #8a8680;
-  --dim: #b0ada6;
-  --soft: #6b6862;
-  --border: #dbd7cf;
-  --hover-bg: #f7f6f3;
-  --nav-bg: rgba(253, 253, 252, 0.88);
-  --text-strong: #4a4740;
-  --ink-hover: #322f2a;
+  --bg: #ffffff;
+  --ink: #0a0a0a;
+  --muted: #767676;
+  --dim: #a8a8a8;
+  --soft: #5c5c5c;
+  --border: #e2e2e2;
+  --hover-bg: #f5f5f5;
+  --ink-hover: #000000;
   --accent: #a8563d;
   --content-max: 1400px;
   --edge-pad: clamp(24px, 4vw, 48px);
 }
 
 [data-theme="dark"] {
-  --bg: #1a1813;
-  --ink: #f1efe9;
-  --muted: #948f85;
-  --dim: #5c584f;
-  --soft: #b3ada2;
-  --border: #2e2b25;
-  --hover-bg: #1e1c17;
+  --bg: #0a0a0a;
+  --ink: #f5f5f5;
+  --muted: #8c8c8c;
+  --dim: #565656;
+  --soft: #b3b3b3;
+  --border: #262626;
+  --hover-bg: #161616;
+  --ink-hover: #ffffff;
   --accent: #dd9470;
-  --nav-bg: rgba(26, 24, 19, 0.88);
-  --text-strong: #d9d6cd;
-  --ink-hover: #ded9d0;
 }
 
 html { scroll-behavior: smooth; }
 
 body {
-  font-family: 'Inter', Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background: var(--bg);
   color: var(--ink);
   min-height: 100vh;
@@ -55,7 +51,8 @@ a {
 }
 
 .mono {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: 0.05em;
 }
 
 /* NAV */
@@ -63,9 +60,7 @@ nav {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: var(--nav-bg);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
 
@@ -79,9 +74,9 @@ nav {
 }
 
 .nav-name {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 14px;
-  letter-spacing: 0.02em;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 16px;
+  letter-spacing: 0.01em;
 }
 
 .nav-brand {
@@ -111,8 +106,8 @@ nav {
   flex-wrap: wrap;
   align-items: center;
   gap: 12px 32px;
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
+  letter-spacing: 0.03em;
   color: var(--soft);
 }
 
@@ -136,35 +131,6 @@ nav {
 
 .theme-toggle:hover {
   color: var(--accent);
-}
-
-/* HERO */
-.hero {
-  padding: clamp(80px, 12vw, 140px) var(--edge-pad) clamp(70px, 8vw, 120px);
-  max-width: var(--content-max);
-  margin: 0 auto;
-}
-
-.hero h1 {
-  font-size: clamp(28px, 2vw + 20px, 42px);
-  font-weight: 500;
-  letter-spacing: -0.01em;
-  margin-bottom: 24px;
-}
-
-.hero-role {
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 24px;
-  letter-spacing: 0.03em;
-}
-
-.hero-bio {
-  font-size: clamp(16px, 0.3vw + 15px, 18px);
-  line-height: 1.6;
-  color: var(--text-strong);
-  max-width: 560px;
-  white-space: pre-line;
 }
 
 /* SECTIONS */
@@ -193,8 +159,9 @@ nav {
 }
 
 .section-header h2 {
-  font-size: clamp(20px, 0.5vw + 18px, 24px);
-  font-weight: 600;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: clamp(22px, 0.5vw + 20px, 27px);
+  font-weight: 500;
   letter-spacing: -0.01em;
 }
 
@@ -228,7 +195,8 @@ nav {
 }
 
 .project-title {
-  font-size: 24px;
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 25px;
   font-weight: 500;
   letter-spacing: -0.01em;
   margin-bottom: 6px;
@@ -300,8 +268,8 @@ nav {
   width: fit-content;
   margin: 24px auto 0;
   padding: 10px 20px;
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
+  letter-spacing: 0.03em;
   color: var(--soft);
   background: none;
   border: 1px solid var(--border);
@@ -431,8 +399,8 @@ nav {
 footer {
   display: flex;
   justify-content: space-between;
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
+  letter-spacing: 0.03em;
   color: var(--dim);
   padding-top: 24px;
   border-top: 1px solid var(--border);

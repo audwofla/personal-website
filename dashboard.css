@@ -32,7 +32,6 @@
 
 /* SHARED CONTROLS */
 .dash-input {
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
   padding: 10px 12px;
   border: 1px solid var(--border);
@@ -48,7 +47,6 @@
 }
 
 .dash-textarea {
-  font-family: 'Inter', Helvetica, Arial, sans-serif;
   min-height: 90px;
   resize: vertical;
   line-height: 1.5;
@@ -61,8 +59,8 @@
 }
 
 .dash-btn {
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
+  letter-spacing: 0.02em;
   padding: 10px 16px;
   border: 1px solid var(--border);
   background: var(--bg);
@@ -134,8 +132,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 28px 48px;
-  background: var(--nav-bg);
-  backdrop-filter: blur(6px);
+  background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
 
@@ -162,8 +159,8 @@
 }
 
 .dash-tab {
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
+  letter-spacing: 0.02em;
   padding: 8px 14px;
   border: 1px solid var(--border);
   border-radius: 2px;
@@ -267,8 +264,8 @@
 }
 
 .dash-delete-btn {
-  font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
+  letter-spacing: 0.02em;
   background: none;
   border: none;
   color: var(--soft);
@@ -356,7 +353,7 @@
 .dash-card-field label {
   font-size: 11px;
   color: var(--dim);
-  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: 0.02em;
 }
 
 @media (max-width: 640px) {
