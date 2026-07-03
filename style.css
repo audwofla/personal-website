@@ -163,6 +163,7 @@ nav {
   line-height: 1.6;
   color: var(--text-strong);
   max-width: 560px;
+  white-space: pre-line;
 }
 
 /* SECTIONS */
