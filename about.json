@@ -12,6 +12,10 @@
     {
       "label": "linkedin",
       "url": "https://www.linkedin.com/in/jeremymyung/"
+    },
+    {
+      "label": "resume",
+      "url": "resume.pdf"
     }
   ]
 }
