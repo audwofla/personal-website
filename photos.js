@@ -1,3 +1,5 @@
+const INITIAL_PHOTO_COUNT = 9;
+
 async function renderPhotos() {
   const grid = document.getElementById('photo-grid');
   if (!grid) return;
@@ -17,26 +19,45 @@ async function renderPhotos() {
       return;
     }
 
-    for (const p of photos) {
-      const item = document.createElement('div');
-      item.className = 'photo-item';
+    const visible = photos.slice(0, INITIAL_PHOTO_COUNT);
+    const rest = photos.slice(INITIAL_PHOTO_COUNT);
 
-      const img = document.createElement('img');
-      img.src = p.src;
-      img.alt = p.label || '';
-      img.loading = 'lazy';
+    for (const p of visible) {
+      grid.appendChild(buildPhotoItem(p));
+    }
 
-      const label = document.createElement('span');
-      label.className = 'mono photo-label';
-      label.textContent = p.label || '';
-
-      item.append(img, label);
-      item.addEventListener('click', () => openLightbox(p.src, p.label));
-      grid.appendChild(item);
+    if (rest.length) {
+      const moreBtn = document.createElement('button');
+      moreBtn.type = 'button';
+      moreBtn.className = 'mono show-more-btn';
+      moreBtn.textContent = `+ show ${rest.length} more`;
+      moreBtn.addEventListener('click', () => {
+        for (const p of rest) grid.appendChild(buildPhotoItem(p));
+        moreBtn.remove();
+      });
+      grid.after(moreBtn);
     }
   } catch (err) {
     grid.innerHTML = '<div class="photo-grid-empty"><span class="mono">// couldn\'t load photos</span></div>';
   }
+}
+
+function buildPhotoItem(p) {
+  const item = document.createElement('div');
+  item.className = 'photo-item';
+
+  const img = document.createElement('img');
+  img.src = p.src;
+  img.alt = p.label || '';
+  img.loading = 'lazy';
+
+  const label = document.createElement('span');
+  label.className = 'mono photo-label';
+  label.textContent = p.label || '';
+
+  item.append(img, label);
+  item.addEventListener('click', () => openLightbox(p.src, p.label));
+  return item;
 }
 
 function openLightbox(src, label) {

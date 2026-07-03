@@ -296,6 +296,26 @@ nav {
   text-align: center;
 }
 
+.show-more-btn {
+  align-self: center;
+  width: fit-content;
+  margin: 24px auto 0;
+  padding: 10px 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--soft);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.show-more-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .photo-grid-empty .mono {
   font-size: 13px;
   color: var(--dim);
